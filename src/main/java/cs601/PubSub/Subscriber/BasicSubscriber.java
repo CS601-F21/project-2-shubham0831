@@ -1,4 +1,4 @@
-package PubSub.Subscriber;
+package cs601.PubSub.Subscriber;
 
 public class BasicSubscriber <T> implements Subscriber <T>{
 

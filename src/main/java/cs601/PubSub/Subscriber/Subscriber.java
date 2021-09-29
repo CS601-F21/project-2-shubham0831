@@ -1,4 +1,4 @@
-package PubSub.Subscriber;
+package cs601.PubSub.Subscriber;
 
 public interface Subscriber <T> {
     /**

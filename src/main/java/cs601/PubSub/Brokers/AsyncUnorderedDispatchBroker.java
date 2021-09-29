@@ -1,8 +1,9 @@
-package PubSub.Brokers;
+package cs601.PubSub.Brokers;
 
-import PubSub.Subscriber.BasicSubscriber;
+import cs601.PubSub.Subscriber.BasicSubscriber;
 
-public class SynchronousOrderedDispatchBroker <T> implements Broker <T> {
+
+public class AsyncUnorderedDispatchBroker <T> implements Broker <T>{
     @Override
     public void publish(T item) {
 
