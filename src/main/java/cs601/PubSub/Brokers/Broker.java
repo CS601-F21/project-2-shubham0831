@@ -1,6 +1,6 @@
 package cs601.PubSub.Brokers;
 
-import cs601.PubSub.Subscriber.BasicSubscriber;
+import cs601.PubSub.Subscriber.Subscriber;
 
 
 public interface Broker <T> {
@@ -19,7 +19,7 @@ public interface Broker <T> {
      *
      * @param subscriber
      */
-    public void subscribe(BasicSubscriber subscriber);
+    public void subscribe(Subscriber subscriber);
 
     /**
      * Indicates this broker should stop accepting new

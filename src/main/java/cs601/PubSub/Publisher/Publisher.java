@@ -1,3 +1,6 @@
 package cs601.PubSub.Publisher;
-public class Publisher {
+
+
+public interface Publisher <T> {
+    public void publish (T item);
 }

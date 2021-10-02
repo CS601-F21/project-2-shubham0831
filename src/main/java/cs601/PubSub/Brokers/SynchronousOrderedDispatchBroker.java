@@ -1,6 +1,6 @@
 package cs601.PubSub.Brokers;
 
-import cs601.PubSub.Subscriber.BasicSubscriber;
+import cs601.PubSub.Subscriber.Subscriber;
 
 public class SynchronousOrderedDispatchBroker <T> implements Broker <T> {
     @Override
@@ -9,7 +9,7 @@ public class SynchronousOrderedDispatchBroker <T> implements Broker <T> {
     }
 
     @Override
-    public void subscribe(BasicSubscriber subscriber) {
+    public void subscribe(Subscriber subscriber) {
 
     }
 
