@@ -40,18 +40,19 @@ public class FileTransfer {
             int finalI = i;
 
 //            This implementation is not working
-//            Thread t1 = new Thread(() -> publisher1.publish(txt.get(finalI)));
-//            Thread t2 = new Thread(() -> publisher2.publish(txt1.get(finalI)));
-//            t1.start();
-//            t2.start();
-//
-//            t2.run();
-//            t1.run();
+            Thread t1 = new Thread(() -> publisher1.publish(txt.get(finalI)));
+            Thread t2 = new Thread(() -> publisher2.publish(txt1.get(finalI)));
+            t1.start();
+            t2.start();
+
+            t2.run();
+            t1.run();
+
 //            This implmentation is working
-            tPool.submit( () -> {
-               publisher1.publish(txt.get(finalI));
-               publisher2.publish(txt1.get(finalI));
-            });
+//            tPool.submit( () -> {
+//               publisher1.publish(txt.get(finalI));
+//               publisher2.publish(txt1.get(finalI));
+//            });
 
         }
 
