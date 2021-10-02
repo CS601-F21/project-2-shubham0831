@@ -12,7 +12,7 @@ public class SimpleStringSubscriber <T> implements Subscriber <T> {
     private AtomicInteger i = new AtomicInteger(0);
     private HashMap<T, Integer> countMap = new HashMap<>();
     @Override
-    public void onEvent(T item) {
+    public synchronized void onEvent(T item) {
         printItem(item);
     }
 
@@ -37,7 +37,9 @@ public class SimpleStringSubscriber <T> implements Subscriber <T> {
     public void getI (){
         System.out.println("i is " + i + " size of set is " + countMap.size());
         for (T key : countMap.keySet()){
-            System.out.println(key + " ----> " + countMap.get(key));
+            if (countMap.get(key) != 4){
+                System.out.println(key + " ----> " + countMap.get(key));
+            }
         }
     }
 }

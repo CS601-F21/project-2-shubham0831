@@ -12,7 +12,7 @@ public class SimpleStringPublisher <T> extends Thread implements Publisher<T>{
 
     @Override
     public synchronized void publish(T item) {
-        System.out.println(Thread.currentThread().getName() + " is handling " + item);
+//        System.out.println(Thread.currentThread().getName() + " is handling " + item);
         for (Broker b : secondBrokerList){
             b.publish(item);
         }
