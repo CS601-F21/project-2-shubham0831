@@ -37,9 +37,7 @@ public class SimpleStringSubscriber <T> implements Subscriber <T> {
     public void getI (){
         System.out.println("i is " + i + " size of set is " + countMap.size());
         for (T key : countMap.keySet()){
-            if (countMap.get(key) != 2){
-                System.out.println(key + " ----> " + countMap.get(key));
-            }
+            System.out.println(key + " ----> " + countMap.get(key));
         }
     }
 }
