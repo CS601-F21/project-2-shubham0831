@@ -8,7 +8,7 @@ import java.util.HashSet;
 public class SimpleStringBroker <T> implements Broker <T> {
     private HashSet<Subscriber> subList = new HashSet<>();
     @Override
-    public synchronized void publish(T item) {
+    public void publish(T item) {
         for (Subscriber sub : subList){
             sub.onEvent(item);
         }
