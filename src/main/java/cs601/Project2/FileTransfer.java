@@ -52,23 +52,46 @@ public class FileTransfer {
         Instant start = Instant.now();
 
 
-        for (int i = 0;  i < txt.size(); i++){
-            int finalI = i;
-//            publisher1.publish(txt.get(finalI));
-//            publisher2.publish(txt1.get(finalI));
-//            publisher3.publish(txt2.get(finalI));
-//            publisher4.publish(txt3.get(finalI));
+//        for (int i = 0;  i < txt.size(); i++){
+//            int finalI = i;
+//
+////            Single threaded approach, for publishing 4*10000000 data using 4 publishers, takes 10480ms to exit the for loop
+////            publisher1.publish(txt.get(finalI));
+////            publisher2.publish(txt1.get(finalI));
+////            publisher3.publish(txt2.get(finalI));
+////            publisher4.publish(txt3.get(finalI));
+//
+////            ThreadPool implementation, for publishing 4*10000000 data using 4 publishers, takes 3826ms to exit the for loop
+////            tPool.submit( () -> {
+////               publisher1.publish(txt.get(finalI));
+////               publisher2.publish(txt1.get(finalI));
+////               publisher3.publish(txt2.get(finalI));
+////               publisher4.publish(txt3.get(finalI));
+////            });
+//        }
 
-            tPool.submit( () -> {
-               publisher1.publish(txt.get(finalI));
-               publisher2.publish(txt1.get(finalI));
-               publisher3.publish(txt2.get(finalI));
-               publisher4.publish(txt3.get(finalI));
-
-            });
-//                        This implementation is not working
-//            Thread t1 = new Thread(() -> publisher1.publish(txt.get(finalI)));
-        }
+//        Using individual threads get back to the main method the fastest at 4ms
+        Thread t1 = new Thread(() -> {
+            for (int i = 0; i < txt.size(); i++){
+                publisher1.publish(txt.get(i));
+            }
+        });
+        Thread t2 = new Thread(() -> {
+            for (int i = 0; i < txt.size(); i++){
+                publisher2.publish(txt1.get(i));
+            }
+        });
+        Thread t3 = new Thread(() -> {
+            for (int i = 0; i < txt.size(); i++){
+                publisher3.publish(txt2.get(i));
+            }
+        });
+        Thread t4 = new Thread(() -> {
+            for (int i = 0; i < txt.size(); i++){
+                publisher4.publish(txt3.get(i));
+            }
+        });
+        t1.start(); t2.start(); t3.start(); t4.start();
 
         Instant finish = Instant.now();
 
@@ -84,7 +107,7 @@ public class FileTransfer {
             e.printStackTrace();
         }
 
-//        TimeUnit.SECONDS.sleep(10);
+        TimeUnit.SECONDS.sleep(30);
 
         System.out.println();
 
