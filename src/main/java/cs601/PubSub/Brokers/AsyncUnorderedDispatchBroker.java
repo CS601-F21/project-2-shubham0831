@@ -16,6 +16,7 @@ public class AsyncUnorderedDispatchBroker <T> implements Broker <T>{
                     }
                 }
         );
+        t1.start();
     }
 
     @Override

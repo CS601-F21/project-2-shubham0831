@@ -11,7 +11,7 @@ public class SimpleStringPublisher <T> extends Thread implements Publisher<T>{
     HashSet<Broker<T>> secondBrokerList = new HashSet<>(); //another way to do it, but this will make the publisher publish to any broker
 
     @Override
-    public synchronized void publish(T item) {
+    public void publish(T item) {
 //        System.out.println(Thread.currentThread().getName() + " is handling " + item);
         for (Broker b : secondBrokerList){
             b.publish(item);
@@ -19,6 +19,7 @@ public class SimpleStringPublisher <T> extends Thread implements Publisher<T>{
     }
 
     public void addBroker (Broker b){
+//        System.out.println("adding broker");
         secondBrokerList.add(b);
     }
 

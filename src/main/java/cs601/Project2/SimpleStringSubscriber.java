@@ -12,7 +12,7 @@ public class SimpleStringSubscriber <T> implements Subscriber <T> {
     private AtomicInteger i = new AtomicInteger(0);
     private HashMap<T, Integer> countMap = new HashMap<>();
     @Override
-    public synchronized void onEvent(T item) {
+    public void onEvent(T item) {
         printItem(item);
     }
 
@@ -21,7 +21,7 @@ public class SimpleStringSubscriber <T> implements Subscriber <T> {
     }
 
     public void printItem (T item){
-//        System.out.println("Recieved item " + item);
+        System.out.println("Recieved item " + item);
         if (!countMap.containsKey(item)){
             countMap.put(item, 1);
         }

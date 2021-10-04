@@ -4,10 +4,11 @@ import cs601.PubSub.Subscriber.Subscriber;
 
 import java.util.HashSet;
 
-public class SynchronousOrderedDispatchBroker <T> implements Broker <T> {
+public class SynchronousOrderedDispatchBroker <T> extends Thread implements Broker <T> {
     private HashSet<Subscriber> subList = new HashSet<>();
     @Override
     public synchronized void publish(T item) {
+//        System.out.println(Thread.currentThread().getName());
         for (Subscriber sub : subList){
             sub.onEvent(item);
         }
