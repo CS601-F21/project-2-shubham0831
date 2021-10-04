@@ -23,7 +23,7 @@ public class AsyncOrderedDispatchBroker <T> implements Broker <T>{
     private HashSet<Subscriber> subList;
 
     public AsyncOrderedDispatchBroker() {
-        this.waitList = new CS601BlockingQueue(100000000);
+        this.waitList = new CS601BlockingQueue(100);
         this.reentrantReadWriteLock= new ReentrantReadWriteLock();
         readLock = reentrantReadWriteLock.readLock();
         writeLock = reentrantReadWriteLock.writeLock();

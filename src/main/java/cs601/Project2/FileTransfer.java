@@ -32,12 +32,12 @@ public class FileTransfer {
 //        t.start();
 //        t.start();
 
-        ExecutorService tPool = Executors.newFixedThreadPool(10000);
-        for (int i = 0; i < 1000000000; i++){
+        ExecutorService tPool = Executors.newFixedThreadPool(100);
+        for (int i = 0; i < 100000; i++){
             int finalI = i;
             tPool.submit(() -> {
                 pub1.publish(finalI);
-                pub2.publish(1000000000+finalI);
+                pub2.publish(10000+finalI);
             });
 
 //            Thread t = new Thread(() -> {
@@ -68,7 +68,5 @@ public class FileTransfer {
                 break;
             }
         }
-
-        System.out.println("Reached here as well papaaa");
     }
 }
