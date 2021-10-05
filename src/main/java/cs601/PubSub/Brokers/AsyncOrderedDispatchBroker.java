@@ -1,4 +1,4 @@
-/*
+/**
     Author Name : Shubham Pareek
     Author mail : spareek@dons.usfca.edu
     Class function : Async Ordered Broker
@@ -13,7 +13,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 
-/*
+/**
     Explanation :
         We have a list of subscribers that are subscribed to a broker. Everytime a publisher
         publishes a new message, we immediately insert that message into the blocking queue.
@@ -51,7 +51,7 @@ public class AsyncOrderedDispatchBroker <T> implements Broker <T>{
     public AsyncOrderedDispatchBroker() {
         //constructor
         //creating a blocking queue with the size at 1000
-        this.waitList = new CS601BlockingQueue(1000);
+        this.waitList = new CS601BlockingQueue(100);
 
         //defining the locks
         this.reentrantReadWriteLock= new ReentrantReadWriteLock();
@@ -84,6 +84,7 @@ public class AsyncOrderedDispatchBroker <T> implements Broker <T>{
             //respective subscribers
             while (!waitList.isEmpty()){
                 T item = waitList.take();
+//                System.out.println("Handling item " + item);
                 sendItem(item);
             }
         });
@@ -104,31 +105,27 @@ public class AsyncOrderedDispatchBroker <T> implements Broker <T>{
         //eventhough the put method in the blocking queue is synchornous, we still use a write lock
         //since we check the state of the publisherThread as well, and might have to redefine the
         //publisher thread, like if it has gotten terminated for some reason
-        writeLock.lock();
-        try {
-            //putting items in the blocking queue
-            waitList.put(item);
 
-            //since initially the thread is new, we have to start the publisherThread
-            if (getThreadState(publisherThread).equals(Thread.State.NEW)){
-                publisherThread.start();
-            }
+        //putting items in the blocking queue
+        waitList.put(item);
 
-            //if for whatever reason, the publisherThread is done publishing all the items in the blocking queue
-            //and the blocking queue becomes empty, the thread will have done its job and will be terminated.
-            //we cannot restart a terminated thread and hence we have to redefine it and start it again.
-            //this if condition checks for the above mentioned condition and redefines and starts the thread again
-            else if (getThreadState(publisherThread).equals(Thread.State.TERMINATED)){
-                createPublishThread();
-                publisherThread.start();
-            }
-        }finally {
-            //since we are using a write lock, we have to unlock it and we do it in the finally method as this method
-            //has to get executed regardless of the context
-            writeLock.unlock();
+//            System.out.println(publisherThread.getState());
+
+        //since initially the thread is new, we have to start the publisherThread
+        if (getThreadState(publisherThread).equals(Thread.State.NEW)){
+            publisherThread.start();
         }
 
+        //if for whatever reason, the publisherThread is done publishing all the items in the blocking queue
+        //and the blocking queue becomes empty, the thread will have done its job and will be terminated.
+        //we cannot restart a terminated thread and hence we have to redefine it and start it again.
+        //this if condition checks for the above mentioned condition and redefines and starts the thread again
+        else if (getThreadState(publisherThread).equals(Thread.State.TERMINATED)){
+            createPublishThread();
+            publisherThread.start();
+        }
     }
+
 
     private Thread.State getThreadState (Thread t) {
         //this method returns the state of any given thread.

@@ -1,4 +1,4 @@
-/*
+/**
     Author Name : Shubham Pareek
     Author Email : spareek@dons.usfca.edu
     Class function : Async Unordered Broker
@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-/*
+/**
     Explanation:
         We have a list of subscribers that are subscribed to a broker. Everytime a publisher
         publishes a new message, we immediately put the message in the thread pool work queue
@@ -91,6 +91,13 @@ public class AsyncUnorderedDispatchBroker <T> implements Broker <T>{
         } finally {
             //unlock the read lock
             readLock.unlock();
+
+//            tPool.shutdown();
+//            try {
+//                tPool.awaitTermination(10, TimeUnit.SECONDS);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
         }
     }
 

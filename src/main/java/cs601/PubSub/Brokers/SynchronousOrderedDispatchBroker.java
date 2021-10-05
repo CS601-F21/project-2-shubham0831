@@ -1,4 +1,4 @@
-/*
+/**
     Author Name : Shubham Pareek
     Author Email : spareek@dons.usfca.edu
     Class function : Synchronous Ordered Broker
@@ -8,10 +8,8 @@ package cs601.PubSub.Brokers;
 import cs601.PubSub.Subscriber.Subscriber;
 
 import java.util.HashSet;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-/*
+/**
     Explanation:
         We have a list of subscribers that are subscribed to a broker. We only allow one thread
         at a time to publish the message that it has to, so the thread which carries the message
