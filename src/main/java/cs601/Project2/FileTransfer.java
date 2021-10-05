@@ -1,11 +1,9 @@
 package cs601.Project2;
 
-import cs601.Concurrent.CS601BlockingQueue;
 import cs601.PubSub.Brokers.AsyncOrderedDispatchBroker;
 import cs601.PubSub.Brokers.AsyncUnorderedDispatchBroker;
 
 import java.util.ArrayList;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -14,7 +12,7 @@ import java.util.concurrent.TimeUnit;
 public class FileTransfer {
     public static void main(String args[]) throws InterruptedException {
         AsyncOrderedDispatchBroker <Integer> broker = new AsyncOrderedDispatchBroker<>();
-
+//        AsyncUnorderedDispatchBroker <Integer> broker = new AsyncUnorderedDispatchBroker<>();
         SimpleStringPublisher <Integer> pub1 = new SimpleStringPublisher<>();
         SimpleStringPublisher <Integer> pub2 = new SimpleStringPublisher<>();
         pub1.addBroker(broker);
@@ -32,8 +30,10 @@ public class FileTransfer {
 //        t.start();
 //        t.start();
 
+        int size = 1000000;
+
         ExecutorService tPool = Executors.newFixedThreadPool(100);
-        for (int i = 0; i < 100000; i++){
+        for (int i = 0; i < size; i++){
             int finalI = i;
             tPool.submit(() -> {
                 pub1.publish(finalI);
@@ -46,12 +46,12 @@ public class FileTransfer {
 //            });
         }
 
-        System.out.println("Reached here");
+        System.out.println("Reached here -----------------");
 
 
         tPool.shutdown();
         try {
-            tPool.awaitTermination(10, TimeUnit.SECONDS);
+            tPool.awaitTermination(15, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -60,7 +60,15 @@ public class FileTransfer {
         ArrayList<Integer> s1 = sub1.getObjList();
         ArrayList<Integer> s2 = sub1.getObjList();
 
+        TimeUnit.SECONDS.sleep(5);
+
         System.out.println(s1.size()); System.out.println(s2.size());
+
+        while (s1.size() != 2*size && s2.size() != 2*size){
+            continue;
+        }
+
+        broker.shutdown();
 
         for (int i = 0; i < s1.size(); i++){
             if (s1.get(i) != s2.get(i)){

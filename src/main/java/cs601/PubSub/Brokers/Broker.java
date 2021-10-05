@@ -27,5 +27,5 @@ public interface Broker <T> {
      * The method will block until all items that have been
      * published have been delivered to all subscribers.
      */
-    public void shutdown();
+    public void shutdown() throws InterruptedException;
 }
