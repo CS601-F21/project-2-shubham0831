@@ -50,9 +50,9 @@ public class AmazonFileSubscriber implements Subscriber<AmazonObject> {
         try {
             objectList.add(item);
             j++;
-            if (objectList.size() == 1304619){
-                System.out.println("got all the items");
-            }
+//            if (objectList.size() == 1304619){
+//                System.out.println("got all the items");
+//            }
         } finally {
             writeLock.unlock();
         }

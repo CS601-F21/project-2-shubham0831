@@ -33,7 +33,7 @@ public class SynchronousOrderedDispatchBroker <T> extends Thread implements Brok
     @Override
     public synchronized void publish(T item) {
         //this is the method which the publisher will call
-
+//        System.out.println("Received item " + Thread.currentThread().getState());
         //the broker will only accept publish requests is it is currently active
         if (!isActive){
             System.out.println("broker is currently shutdown and not accepting any more publish requests");

@@ -31,8 +31,7 @@ public class AmazonFileSplit {
             to read and parse the file that the user has specified, then to publish the parsed file to the broker as well.
 
             TODO:
-                We might be able to see performance gains, if inside each publisher we use a threadpool, or different threads to actually
-                publish the message to the subscriber
+                We might be able to see performance gains, if we use a thread pool to publish the items.
 
             The publishers will not filter the items according to old or new, instead it is the subscriber which does that.
     */
@@ -40,45 +39,69 @@ public class AmazonFileSplit {
         /**
          * TODO:
          *    Write implementation where we parse the input and output files from the args array
+         *    input parameters will be in the following order javac class {brokerType} {inputFile1} {inputFile2} {outputFile1} {outputFile2}
+         *
+         * TODO:
+         *    For asyncOrderedBroker, implement the poll method as without that we cannot guarantee our performance, as threads may be kept waiting
+         *    to insert elements in the blocking queue
          */
+
         String file1 = "/home/shubham/IdeaProjects/project-2-shubham0831/Apps_for_Android_5.json";
         String file2 = "/home/shubham/IdeaProjects/project-2-shubham0831/Home_and_Kitchen_5.json";
 
 //        SynchronousOrderedDispatchBroker asyncBroker = new SynchronousOrderedDispatchBroker();
 //        AsyncUnorderedDispatchBroker asyncBroker = new AsyncUnorderedDispatchBroker();
         AsyncOrderedDispatchBroker asyncBroker = new AsyncOrderedDispatchBroker();
-        AmazonFilePublisher publisher1 = new AmazonFilePublisher(file1);
-        AmazonFilePublisher publisher2 = new AmazonFilePublisher(file2);
-        publisher1.addBroker(asyncBroker);
-        publisher2.addBroker(asyncBroker);
+
+        AmazonFileParser androidParser = new AmazonFileParser(file1);
+        AmazonFileParser homeParser = new AmazonFileParser(file2);
+
+        ArrayList<AmazonObject> androidData = androidParser.getItemsToBePublished();
+        ArrayList<AmazonObject> homeData = homeParser.getItemsToBePublished();
+
+        ItemPublisher <AmazonObject> androidPublisher = new ItemPublisher<>();
+        ItemPublisher <AmazonObject> homePublisher = new ItemPublisher<>();
+        androidPublisher.addBroker(asyncBroker);
+        homePublisher.addBroker(asyncBroker);
+
         AmazonFileSubscriber subscriber1 = new AmazonFileSubscriber();
         AmazonFileSubscriber subscriber2 = new AmazonFileSubscriber();
         subscriber1.subscribeToBroker(asyncBroker);
         subscriber2.subscribeToBroker(asyncBroker);
 
-        publisher1.startPublishing();
-        publisher2.startPublishing();
+        Thread androidThread = new Thread(() -> {
+            for (AmazonObject a : androidData){
+                androidPublisher.publish(a);
+            }
+        });
+
+        Thread homeThread = new Thread(() -> {
+            for (AmazonObject a : homeData){
+                homePublisher.publish(a);
+            }
+        });
+
+        androidThread.start(); homeThread.start();
+
+        try {
+            TimeUnit.SECONDS.sleep(15);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
         asyncBroker.shutdown();
 
-//        try {
-//            TimeUnit.SECONDS.sleep(13);
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
+        ArrayList<AmazonObject> sub1Objects = subscriber1.getObjectList();
+        ArrayList<AmazonObject> sub2Objects = subscriber2.getObjectList();
 
+        System.out.println(sub1Objects.size() + " ---- " + sub2Objects.size());
 
-        ArrayList<AmazonObject> list1 = subscriber1.getObjectList();
-        ArrayList<AmazonObject> list2 = subscriber1.getObjectList();
-
-        System.out.println(list1.size() + " ---- " + list2.size());
-
-//        for (int i = 0; i < list1.size(); i++){
-//            if (list1.get(i) != list2.get(i)){
-//                System.out.println("Two unordered items found");
-//                break;
-//            }
-//        }
+        for (int i = 0; i < sub1Objects.size(); i++){
+            if (sub1Objects.get(i).getAsin() != sub2Objects.get(i).getAsin()){
+                System.out.println("Found mismatch");
+                break;
+            }
+        }
 
         System.out.println("Done");
     }

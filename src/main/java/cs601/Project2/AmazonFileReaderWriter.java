@@ -15,7 +15,7 @@ import java.util.ArrayList;
  *  Explanation:
  *      This class takes as input a file location, opens and parses the file to jsonObject and then stores
  */
-public class AmazonFileReader {
+public class AmazonFileReaderWriter {
     //the location of the file which we have to open and parse
     private String fileLoc;
     //this is the list which contains all the json objects
@@ -26,7 +26,7 @@ public class AmazonFileReader {
     //for testing
     private int j = 0;
 
-    public AmazonFileReader(String fileLoc){
+    public AmazonFileReaderWriter(String fileLoc){
         //constructor
 
         //initializing the fileLoc

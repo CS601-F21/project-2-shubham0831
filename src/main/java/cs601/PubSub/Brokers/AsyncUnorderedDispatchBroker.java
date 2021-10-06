@@ -92,12 +92,8 @@ public class AsyncUnorderedDispatchBroker <T> implements Broker <T>{
             //unlock the read lock
             readLock.unlock();
 
-//            tPool.shutdown();
-//            try {
-//                tPool.awaitTermination(10, TimeUnit.SECONDS);
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
+            //we shutdown the threadpool in the shutdown method and not here, since what this will do is that every thread, after doing it's work will
+            //try and shutdown the threadpool
         }
     }
 

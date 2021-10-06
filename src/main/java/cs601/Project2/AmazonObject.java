@@ -38,4 +38,8 @@ public class AmazonObject {
     public long getUnixReviewTime() {
         return unixReviewTime;
     }
+
+    public String getAsin() {
+        return asin;
+    }
 }
