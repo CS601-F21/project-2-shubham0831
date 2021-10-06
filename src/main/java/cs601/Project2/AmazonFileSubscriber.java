@@ -58,6 +58,10 @@ public class AmazonFileSubscriber implements Subscriber<AmazonObject> {
         }
     }
 
+    private void writeFile (){
+        
+    }
+
     public int getJ () {
         return j;
     }

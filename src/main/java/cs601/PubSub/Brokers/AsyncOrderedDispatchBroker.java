@@ -10,6 +10,9 @@ import cs601.PubSub.Subscriber.Subscriber;
 import cs601.Concurrent.CS601BlockingQueue;
 
 import java.util.HashSet;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -41,6 +44,8 @@ public class AsyncOrderedDispatchBroker <T> implements Broker<T> {
     //this is the thread which will actually dispatch the messages
     private Thread dispatchThread;
 
+    private ExecutorService tPool = Executors.newFixedThreadPool(1);
+
     //status of the broker, whether of not it is accepting more requests
     private boolean brokerIsAlive;
 
@@ -71,16 +76,18 @@ public class AsyncOrderedDispatchBroker <T> implements Broker<T> {
         //polling the blocking queue for items. If the polling method returns null, we
         //do nothing and keep the thread alive
         dispatchThread = new Thread(() -> {
-            while (brokerIsAlive){
-                T item = queue.poll();
-                if (item != null){
-                    for (Subscriber s : subscribers){
-                        s.onEvent(item);
+            synchronized (queue) {
+                while (brokerIsAlive){
+                    T item = queue.poll();
+                    if (item != null){
+                        for (Subscriber s : subscribers){
+                            s.onEvent(item);
+                        }
                     }
-                }
-                //if for whatever reason our thread gets interrupted, we stop and terminate it
-                if (Thread.interrupted()){
-                    return;
+                    //if for whatever reason our thread gets interrupted, we stop and terminate it
+                    if (Thread.interrupted()){
+                        return;
+                    }
                 }
             }
         });
@@ -88,7 +95,7 @@ public class AsyncOrderedDispatchBroker <T> implements Broker<T> {
 
     private void startDispatchThread (){
         //method to start the dispatch thread
-        dispatchThread.start();
+//        dispatchThread.start();
     }
 
     @Override
@@ -98,9 +105,15 @@ public class AsyncOrderedDispatchBroker <T> implements Broker<T> {
         //than one thread to get access to it and hence is threadsafe
         if (brokerIsAlive){
             queue.put(item);
+//            tPool.submit(() -> {
+//                for (Subscriber s : subscribers){
+//                    s.onEvent(item);
+//                }
+//            });
         }
         else {
-            System.out.println("Broker is currently shut down and not accepting requests");
+            //instead of printing out our error messages normally, we use system.err.println as that is the more apt tool to use in this case
+            System.err.println("Broker is shutdown, and currently not accepting publish requests.");
         }
     }
 
@@ -111,12 +124,18 @@ public class AsyncOrderedDispatchBroker <T> implements Broker<T> {
     }
 
     @Override
-    public void shutdown() {
+    public synchronized void shutdown() {
         //Once the user calls the shutdown method, this will not allow any threads to publish the remaining
         //items. Since shutdown has to block the process, we use the main thread to complete all the other publish
         //calls then it returns to the call.
         //This ensures that the items that have already been published before will get published
         brokerIsAlive = false;
+//        tPool.shutdown();
+//        try {
+//            tPool.awaitTermination(10, TimeUnit.SECONDS);
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
         while (!queue.isEmpty()){
             for (Subscriber s : subscribers){
                 s.onEvent(queue.take());

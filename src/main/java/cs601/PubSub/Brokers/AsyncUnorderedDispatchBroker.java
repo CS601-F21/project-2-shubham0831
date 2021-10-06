@@ -62,14 +62,15 @@ public class AsyncUnorderedDispatchBroker <T> implements Broker <T>{
     public void publish(T item) {
         //publish method, this is the method which will be called by the publish to send message to the subscriber
 
-        //the read lock is there, as we do need to read from the subList to get a list of subscribers, and we should not be able to do that if
+        //the read lock is there, as we need to read from the subList to get a list of subscribers, and we should not be able to do that if
         //another thread is adding subscriber to the same set
         readLock.lock();
         try {
             //the broker will only publish items if it is currently active.
             if (isActive == false) {
                 //not throwing an error as that will stop the current threads as well
-                System.out.println("Broker is shutdown, and currently not accepting publish requests. Call the startBroker method to reuse this broker");
+                //instead of printing out our error messages normally, we use system.err.println as that is the more apt tool to use in this case
+                System.err.println("Broker is shutdown, and currently not accepting publish requests.");
                 return;
 //            throw new RuntimeException("Broker is shutdown, and currently not accepting publish requests. Call the startBroker method to reuse this broker");
             }

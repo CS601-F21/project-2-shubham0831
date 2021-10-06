@@ -36,7 +36,8 @@ public class SynchronousOrderedDispatchBroker <T> extends Thread implements Brok
 //        System.out.println("Received item " + Thread.currentThread().getState());
         //the broker will only accept publish requests is it is currently active
         if (!isActive){
-            System.out.println("broker is currently shutdown and not accepting any more publish requests");
+            //instead of printing out our error messages normally, we use system.err.println as that is the more apt tool to use in this case
+            System.err.println("Broker is shutdown, and currently not accepting publish requests.");
             return;
         }
 

@@ -8,6 +8,7 @@
  * Notes :
  *      Total objects in Apps_for_Android == 752937
  *      Total objects in Home_and_Kitchen == 551682
+ *      Total object overall              == 1304619
  *
  *      AsyncUnordered time = 6.56 seconds
  *      Syncordered time = 7 seconds
@@ -15,12 +16,9 @@
  */
 package cs601.Project2;
 
-import cs601.PubSub.Brokers.AsyncOrderedDispatchBroker;
-import cs601.PubSub.Brokers.AsyncUnorderedDispatchBroker;
-import cs601.PubSub.Brokers.SynchronousOrderedDispatchBroker;
-
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.concurrent.TimeUnit;
 
 public class AmazonFileSplit {
     /*
@@ -29,80 +27,43 @@ public class AmazonFileSplit {
             user wants to parse and how do they want to parse it.
             We will have n publishers (in this case n = 2), which extend the publisher interface, it is the job of these publishers
             to read and parse the file that the user has specified, then to publish the parsed file to the broker as well.
-
-            TODO:
-                We might be able to see performance gains, if we use a thread pool to publish the items.
-
-            The publishers will not filter the items according to old or new, instead it is the subscriber which does that.
     */
     public static void main (String[] args){
         /**
          * TODO:
          *    Write implementation where we parse the input and output files from the args array
          *    input parameters will be in the following order javac class {brokerType} {inputFile1} {inputFile2} {outputFile1} {outputFile2}
-         *
-         * TODO:
-         *    For asyncOrderedBroker, implement the poll method as without that we cannot guarantee our performance, as threads may be kept waiting
-         *    to insert elements in the blocking queue
          */
 
-        String file1 = "/home/shubham/IdeaProjects/project-2-shubham0831/Apps_for_Android_5.json";
-        String file2 = "/home/shubham/IdeaProjects/project-2-shubham0831/Home_and_Kitchen_5.json";
+        String androidFileInput = "/home/shubham/IdeaProjects/project-2-shubham0831/Apps_for_Android_5.json";
+        String homeFileInput = "/home/shubham/IdeaProjects/project-2-shubham0831/Home_and_Kitchen_5.json";
 
-//        SynchronousOrderedDispatchBroker asyncBroker = new SynchronousOrderedDispatchBroker();
-//        AsyncUnorderedDispatchBroker asyncBroker = new AsyncUnorderedDispatchBroker();
-        AsyncOrderedDispatchBroker asyncBroker = new AsyncOrderedDispatchBroker();
+        /**
+         * Notes :
+         *      All times are in ms
+         *      SyncOrderedTime = 5922, 8419, 6035, 5870, 5754, 8077, 7946, 7790
+         *      AsyncUnorderedTime = 6046, 8153, 6318, 6071, 6255, 6269, 6248, 6240
+         *      AsyncOrderedTime = 5978, 6066, 7716, 7853, 8404
+         */
+        Instant start = Instant.now();
+        AmazonUtilities utilities = new AmazonUtilities(androidFileInput, homeFileInput, "a", "b", 1);
+        Instant finish = Instant.now();
+        long duration = Duration.between(start,finish).toMillis();
+        System.out.println("Total time taken for program is " + duration);
+        ArrayList<AmazonObject> sub1 = utilities.getWhatNewSubscriberReceived();
+        ArrayList<AmazonObject> sub2 = utilities.getWhatOldSubscriberReceived();
 
-        AmazonFileParser androidParser = new AmazonFileParser(file1);
-        AmazonFileParser homeParser = new AmazonFileParser(file2);
+        //both our subscriber should get the same number of objects
+        assert sub1.size() == sub2.size();
 
-        ArrayList<AmazonObject> androidData = androidParser.getItemsToBePublished();
-        ArrayList<AmazonObject> homeData = homeParser.getItemsToBePublished();
+        System.out.println("Subscriber received " +sub1.size());
 
-        ItemPublisher <AmazonObject> androidPublisher = new ItemPublisher<>();
-        ItemPublisher <AmazonObject> homePublisher = new ItemPublisher<>();
-        androidPublisher.addBroker(asyncBroker);
-        homePublisher.addBroker(asyncBroker);
-
-        AmazonFileSubscriber subscriber1 = new AmazonFileSubscriber();
-        AmazonFileSubscriber subscriber2 = new AmazonFileSubscriber();
-        subscriber1.subscribeToBroker(asyncBroker);
-        subscriber2.subscribeToBroker(asyncBroker);
-
-        Thread androidThread = new Thread(() -> {
-            for (AmazonObject a : androidData){
-                androidPublisher.publish(a);
-            }
-        });
-
-        Thread homeThread = new Thread(() -> {
-            for (AmazonObject a : homeData){
-                homePublisher.publish(a);
-            }
-        });
-
-        androidThread.start(); homeThread.start();
-
-        try {
-            TimeUnit.SECONDS.sleep(15);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        asyncBroker.shutdown();
-
-        ArrayList<AmazonObject> sub1Objects = subscriber1.getObjectList();
-        ArrayList<AmazonObject> sub2Objects = subscriber2.getObjectList();
-
-        System.out.println(sub1Objects.size() + " ---- " + sub2Objects.size());
-
-        for (int i = 0; i < sub1Objects.size(); i++){
-            if (sub1Objects.get(i).getAsin() != sub2Objects.get(i).getAsin()){
-                System.out.println("Found mismatch");
+        //checking order
+        for (int i = 0; i < sub1.size(); i++){
+            if (sub1.get(i).getAsin() != sub2.get(i).getAsin()){
+                System.out.println("Found mismatch at i " + i);
                 break;
             }
         }
-
-        System.out.println("Done");
     }
 }
