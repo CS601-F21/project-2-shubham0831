@@ -24,8 +24,11 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public class AsyncUnorderedDispatchBroker <T> implements Broker <T>{
     //this is the list of subscriber that subscribe to this broker
     private HashSet<Subscriber> subList;
+
     //declaring the threadpool
     private ExecutorService tPool;
+
+    //boolean to keep track of whether broker is still active or not
     boolean isActive;
 
     //we will be needing a lock in this class, as writing to the subscriber set and reading from it
@@ -41,12 +44,8 @@ public class AsyncUnorderedDispatchBroker <T> implements Broker <T>{
         //our list of subscribers will be stored in a hashset, as this will ensure that we
         //do not have any duplicates
         this.subList = new HashSet<>();
+
         //our thread pool will consist of 100 threads.
-        /*
-            TODO:
-                Figure out a way or formula so that the number of threads in the Thread pool depend on the publisher and
-                how much data does the publisher actually have to publish
-        */
         this.tPool = Executors.newFixedThreadPool(100);
 
         //is a boolean we use to check whether the broker is active/accepting requests or not
@@ -120,6 +119,8 @@ public class AsyncUnorderedDispatchBroker <T> implements Broker <T>{
         //shutdown method
         //this method will shut down the broker, and will not allow any further publish requests from this broker
         //this method also shut down the thread pool.
+
+        System.out.println("shutting down async unordered broker\n");
 
         //changing the isActive boolean to false, as this will stop accepting new tasks immediately.
         isActive = false;

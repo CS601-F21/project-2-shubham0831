@@ -7,7 +7,6 @@ package cs601.Project2;
 
 import cs601.PubSub.Brokers.AsyncOrderedDispatchBroker;
 import cs601.PubSub.Brokers.AsyncUnorderedDispatchBroker;
-import cs601.PubSub.Brokers.Broker;
 import cs601.PubSub.Brokers.SynchronousOrderedDispatchBroker;
 
 import java.util.ArrayList;
@@ -17,6 +16,10 @@ import java.util.ArrayList;
  * AmazonObjects based on the json documents in the file, to defining the creating and defining the brokers, publishers and subscribers.
  *
  * This file contains specific code for the purpose of demonstration of the functionality of the brokers and is written accordingly.
+ */
+
+/**
+ *  This class does have some functions that aren't used, but they haven't been deleted since
  */
 
 public class AmazonUtilities {
@@ -57,18 +60,6 @@ public class AmazonUtilities {
     //finally we have the AsynchronousOrderedDispatchBroker
     private AsyncOrderedDispatchBroker<AmazonObject> asyncOrderedBroker;
 
-    //we also need to store our input file locations
-    //we store the location of our android file in this variable
-    private String androidInputFileLocation;
-    //we store the location of our home file in this variable
-    private String homeInputFileLocation;
-
-    //we will also be needing the output file locations as well
-    //we store the location of the old documents in this variable
-    private String oldDocumentsFileLocation;
-    //we store the location of the new documents in this variable
-    private String newDocumentsFileLocation;
-
     //we do not need a specified charset, as that has been hardcoded this time
 
     //these variables are for the AmazonFileParser class, these object takes in as input
@@ -82,13 +73,6 @@ public class AmazonUtilities {
     private ArrayList<AmazonObject> homeFileObjects;
 
     public AmazonUtilities(String androidInputFileLocation, String homeInputFileLocation, String oldDocumentsFileLocation, String newDocumentsFileLocation, int brokerFlag){
-        //in this constructor, we take the input and output files and define them. After doing that we parse the input
-        //files and store them in the FileObjects arraylist
-        this.androidInputFileLocation = androidInputFileLocation;
-        this.homeInputFileLocation = homeInputFileLocation;
-        this.oldDocumentsFileLocation = oldDocumentsFileLocation;
-        this.newDocumentsFileLocation = newDocumentsFileLocation;
-
         //constructing the broker flag
         this.brokerFlag = brokerFlag;
 
@@ -109,8 +93,8 @@ public class AmazonUtilities {
         homeFilePublisher = new ItemPublisher<>();
 
         //we are initializing our subscribers over here
-        oldAmazonFileSubscriber = new AmazonFileSubscriber();
-        newAmazonFileSubscriber = new AmazonFileSubscriber();
+        oldAmazonFileSubscriber = new AmazonFileSubscriber(1362268800, true, oldDocumentsFileLocation);
+        newAmazonFileSubscriber = new AmazonFileSubscriber(1362268800, false, newDocumentsFileLocation);
 
         //now at this stage we have our files which have to be published in the proper format, all we have to do this initialize the brokers, have
         //publishers add the brokers so that they publish to said broker and have subscriber subscribe to the brokers
@@ -167,10 +151,14 @@ public class AmazonUtilities {
         androidFilePublisherThread.start();
         homeFilePublisherThread.start();
 
-        //we use this while loop as we cannot be sure when our threads are done with publishing, and
-        //if we shutdown our thread earlier and continue to send publish request, we will keep getting
-        //error messages
-        while (androidFilePublisherThread.isAlive() || homeFilePublisherThread.isAlive()){}
+        //we use this to ensure that we only shutdown our broker once both the threads are done publishing
+        //because if we shut down our threads before we are done publishing we will get error messages
+        try {
+            androidFilePublisherThread.join();
+            homeFilePublisherThread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         syncOrderedBroker.shutdown();
     }
 
@@ -204,10 +192,14 @@ public class AmazonUtilities {
         androidFilePublisherThread.start();
         homeFilePublisherThread.start();
 
-        //we use this while loop as we cannot be sure when our threads are done with publishing, and
-        //if we shutdown our thread earlier and continue to send publish request, we will keep getting
-        //error messages
-        while (androidFilePublisherThread.isAlive() || homeFilePublisherThread.isAlive()){}
+        //we use this to ensure that we only shutdown our broker once both the threads are done publishing
+        //because if we shut down our threads before we are done publishing we will get error messages
+        try {
+            androidFilePublisherThread.join();
+            homeFilePublisherThread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         asyncUnorderedBroker.shutdown();
     }
 
@@ -241,10 +233,14 @@ public class AmazonUtilities {
         androidFilePublisherThread.start();
         homeFilePublisherThread.start();
 
-        //we use this while loop as we cannot be sure when our threads are done with publishing, and
-        //if we shutdown our thread earlier and continue to send publish request, we will keep getting
-        //error messages
-        while (androidFilePublisherThread.isAlive() || homeFilePublisherThread.isAlive()){}
+        //we use this to ensure that we only shutdown our broker once both the threads are done publishing
+        //because if we shut down our threads before we are done publishing we will get error messages
+        try {
+            androidFilePublisherThread.join();
+            homeFilePublisherThread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         asyncOrderedBroker.shutdown();
     }
 
@@ -252,12 +248,89 @@ public class AmazonUtilities {
      * End of broker method implementation
      */
 
-    public ArrayList<AmazonObject> getWhatOldSubscriberReceived() {
-        return oldAmazonFileSubscriber.getObjectList();
+    private ArrayList<AmazonObject> getWhatOldSubscriberReceived() {
+        return new ArrayList<>(oldAmazonFileSubscriber.getAllObjects());
     }
 
-    public ArrayList<AmazonObject> getWhatNewSubscriberReceived() {
-        return newAmazonFileSubscriber.getObjectList();
+    private ArrayList<AmazonObject> getWhatNewSubscriberReceived() {
+        return new ArrayList<>(newAmazonFileSubscriber.getAllObjects());
+    }
+
+    private ArrayList<AmazonObject> getWhatOldSubscriberPrinted() {
+        return new ArrayList<>(oldAmazonFileSubscriber.getObjectsToBePrinted());
+    }
+
+    private ArrayList<AmazonObject> getWhatNewSubscriberPrinted() {
+        return new ArrayList<>(newAmazonFileSubscriber.getObjectsToBePrinted());
+    }
+
+    private void writeOldFile (){
+        oldAmazonFileSubscriber.writeFile();
+    }
+
+    private void writeNewFile (){
+        newAmazonFileSubscriber.writeFile();
+    }
+
+    public void checkExecutionCorrectness (){
+        /**
+         * This is the method where we check the correctness of our program
+         * The following are the checks we will do :
+         *      1) Ensure that both the subscribers have received all the items (ie. same number of items)
+         *      2) Ensure that both the subscribers received items in the same order if they used an ordered broker
+         *      3) Get the count of both the output files
+         * Once we check for everything, this method prints out the output of all the checks
+         */
+        boolean sizeIsSame = checkForSize();
+        long totalItemSubsReceived = getWhatNewSubscriberReceived().size();
+        boolean itemsAreOrdered = checkForMismatch();
+        long countInNewFile = getWhatNewSubscriberPrinted().size();
+        long countInOldFile = getWhatOldSubscriberPrinted().size();
+
+        System.out.println("Total elements both items received is the same : " +sizeIsSame + "\n"+
+                           "Total items both items received : " +totalItemSubsReceived + "\n"+
+                           "Order in which subscriber received items is the same : "+itemsAreOrdered + "\n"+
+                           "Total items in file containing new items : " + countInNewFile + "\n"+
+                           "Total items in file containing old items : " + countInOldFile);
+    }
+
+    private boolean checkForSize (){
+        //check for whether both the subscribers received the same number of documents
+        ArrayList<AmazonObject> sub1 = getWhatNewSubscriberReceived();
+        ArrayList<AmazonObject> sub2 = getWhatOldSubscriberReceived();
+        return sub1.size() == sub2.size();
+    }
+
+    private boolean checkForMismatch () {
+        ArrayList<AmazonObject> sub1 = getWhatNewSubscriberReceived();
+        ArrayList<AmazonObject> sub2 = getWhatOldSubscriberReceived();
+        boolean itemsAreOrdered = true;
+
+        for (int i = 0; i < sub1.size(); i++){
+            if (sub1.get(i) != sub2.get(i)){
+                itemsAreOrdered = false;
+                break;
+            }
+        }
+        return itemsAreOrdered;
+    }
+
+    public void writeBothFiles () {
+        Thread oldWriter = new Thread(() -> {
+            writeOldFile();
+        });
+        Thread newWriter = new Thread(() -> {
+            writeNewFile();
+        });
+        oldWriter.start();
+        newWriter.start();
+
+        try {
+            oldWriter.join();
+            newWriter.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
 }

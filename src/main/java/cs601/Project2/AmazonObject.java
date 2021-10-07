@@ -9,7 +9,7 @@ import java.util.ArrayList;
 
 public class AmazonObject {
     //these are all the fields in the json files
-    private String reviewerId;
+    private String reviewerID;
     private String asin;
     private String reviewerName;
     private ArrayList helpful;
@@ -23,7 +23,7 @@ public class AmazonObject {
                          ArrayList helpful, String reviewText, float overall,
                          String summary, long unixReviewTime, String reviewTime)
     {
-        this.reviewerId = reviewerId;
+        this.reviewerID = reviewerId;
         this.asin = asin;
         this.reviewerName = reviewerName;
         this.helpful = helpful;
@@ -39,7 +39,4 @@ public class AmazonObject {
         return unixReviewTime;
     }
 
-    public String getAsin() {
-        return asin;
-    }
 }

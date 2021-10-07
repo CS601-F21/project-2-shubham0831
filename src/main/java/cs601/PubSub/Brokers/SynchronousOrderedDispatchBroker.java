@@ -58,12 +58,21 @@ public class SynchronousOrderedDispatchBroker <T> extends Thread implements Brok
         //subscribe method
         //this is the method the subscriber calls to subscribe to the broker.
         //the subscriber which calls the method, gets added to the subscriber set in the class
-        subList.add(subscriber);
+        //method is synchronized with the publish method, hence is thread safe
+
+        if (isActive){
+            subList.add(subscriber);
+        }
+        else {
+            System.err.println("Broker is shutdown and not acceptinf subscribers");
+        }
     }
 
     @Override
     public void shutdown() {
         //is the shutdown method called by the user to tell the broker to stop accepting any new publish requests
+
+        System.out.println("shutting down sync broker");
 
         //when shutdown, we make the isActive variable false that implies that the broker is not currently active
         isActive = false;

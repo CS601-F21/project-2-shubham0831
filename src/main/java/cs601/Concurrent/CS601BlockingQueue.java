@@ -22,7 +22,6 @@ public class CS601BlockingQueue <T> {
      * @param item
      */
     public synchronized void put(T item) {
-//        System.out.println("received item");
         while(size == items.length) {
             try {
                 this.wait();
@@ -62,18 +61,17 @@ public class CS601BlockingQueue <T> {
         if(size == items.length-1) {
             this.notifyAll();
         }
-
         return item;
     }
 
-    public synchronized T poll() {
-        if (size == 0){
+    public synchronized T poll(long millis) {
+        if (isEmpty()){
             try {
-                this.wait(1000);
+                this.wait(millis);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            if (size == 0){
+            if (isEmpty()){
                 return null;
             }
             else {

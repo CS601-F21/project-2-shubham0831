@@ -1,19 +1,13 @@
 /**
  Author Name : Shubham Pareek
  Author Email : spareek@dons.usfca.edu
- Class function : Publisher implementation for the Amazon File
+ Class function : Class parses the json files
  */
 package cs601.Project2;
 
 import cs601.PubSub.Brokers.Broker;
 
 import java.util.ArrayList;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-
 /**
     Explanation :
         This is the AmazonFilePublisher class, it takes in as input some Amazon File from the 5-core data set, process the file
