@@ -81,7 +81,6 @@ public class AsyncOrderedDispatchBroker <T> implements Broker<T> {
         //do nothing and keep the thread alive
         dispatchThread = new Thread(() -> {
             //cannot be having one thread inserting element in the queue while another is readin from it
-            synchronized (queue) {
                 while (brokerIsAlive){
                     T item = queue.poll(1000);
                     if (item != null){
@@ -100,7 +99,6 @@ public class AsyncOrderedDispatchBroker <T> implements Broker<T> {
                         return;
                     }
                 }
-            }
         });
     }
 

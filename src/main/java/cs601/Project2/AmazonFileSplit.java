@@ -124,6 +124,7 @@ public class AmazonFileSplit {
 
         brokerFlag = userInputBrokerType;
 
+        //since args 2,4,6,... will be for file description, ie. -reviewFile ,etc
         for (int i = 2; i < args.length; i = i+2){
             if (args[i].endsWith(".json")){
                 System.err.println("Invalid Arguments, first we need the file description");
@@ -131,6 +132,7 @@ public class AmazonFileSplit {
             }
         }
 
+        //args 3,5,7,.... will be the json files
         for (int i = 3; i < args.length; i = i+2){
             if (!args[i].endsWith(".json")){
                 System.err.println("Invalid Arguments, only accepting json");
