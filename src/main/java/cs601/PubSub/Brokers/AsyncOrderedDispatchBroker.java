@@ -80,8 +80,8 @@ public class AsyncOrderedDispatchBroker <T> implements Broker<T> {
         //polling the blocking queue for items. If the polling method returns null, we
         //do nothing and keep the thread alive
         dispatchThread = new Thread(() -> {
-            //cannot be having one thread inserting element in the queue while another is readin from it
-                while (brokerIsAlive){
+            //fixed bug where we didn't wait for the queue to get empty before shutting down the broker
+                while (brokerIsAlive || !queue.isEmpty()){
                     T item = queue.poll(1000);
                     if (item != null){
                         //need read lock as thread will be reading from the subList
@@ -147,11 +147,11 @@ public class AsyncOrderedDispatchBroker <T> implements Broker<T> {
 
         System.out.println("shutting down async ordered broker\n");
 
-        //changine broker status to shutdown
+        //changing broker status and deactivating it
         brokerIsAlive = false;
 
         //once the user calls shutdown, we invoke the join method and wait for the dispatchThread to do its work
-        //then only we return back to the caller
+        //then only we return to the caller
         try {
             dispatchThread.join();
         } catch (InterruptedException e) {
