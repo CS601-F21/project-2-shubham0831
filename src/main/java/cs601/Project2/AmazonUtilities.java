@@ -7,6 +7,7 @@ package cs601.Project2;
 
 import cs601.PubSub.Brokers.AsyncOrderedDispatchBroker;
 import cs601.PubSub.Brokers.AsyncUnorderedDispatchBroker;
+import cs601.PubSub.Brokers.Broker;
 import cs601.PubSub.Brokers.SynchronousOrderedDispatchBroker;
 
 import java.util.ArrayList;
@@ -51,14 +52,17 @@ public class AmazonUtilities {
      *          We will be getting this broker flag as an input in our constructor
      */
     private int brokerFlag;
+
     //all our brokers will be brokers of object of type AmazonObject, which is what we will cast the
     //individual documents on the json file to
-    //firstly we have the SynchronousOrderedDispatchBroker
-    private SynchronousOrderedDispatchBroker<AmazonObject> syncOrderedBroker;
-    //then the AsyncUnorderedDispatchBroker
-    private AsyncUnorderedDispatchBroker<AmazonObject> asyncUnorderedBroker;
-    //finally we have the AsynchronousOrderedDispatchBroker
-    private AsyncOrderedDispatchBroker<AmazonObject> asyncOrderedBroker;
+
+//    //firstly we have the SynchronousOrderedDispatchBroker
+//    private SynchronousOrderedDispatchBroker<AmazonObject> syncOrderedBroker;
+//    //then the AsyncUnorderedDispatchBroker
+//    private AsyncUnorderedDispatchBroker<AmazonObject> asyncUnorderedBroker;
+//    //finally we have the AsynchronousOrderedDispatchBroker
+//    private AsyncOrderedDispatchBroker<AmazonObject> asyncOrderedBroker;
+    private Broker<AmazonObject> broker;
 
     //we do not need a specified charset, as that has been hardcoded this time
 
@@ -101,33 +105,34 @@ public class AmazonUtilities {
         //what broker we start and initialize depends on the value of the brokerFlag as we have defined above.
         //if the brokerFlag == -1, we start the SynchronousOrderedDispatchBroker
         if (brokerFlag == -1){
-            startSyncOrderedBroker();
+            broker = new SynchronousOrderedDispatchBroker<>();
+            startBroker();
         }
         //if the brokerFlag == 0, we start the AsyncUnorderedDispatchBroker
         else if (brokerFlag == 0){
-            startAsyncUnorderedBroker();
+            broker = new AsyncUnorderedDispatchBroker<>();
+            startBroker();
         }
         //if the brokerFlag == 1, we start the AsyncOrderedDispatchBroker
         else if (brokerFlag == 1){
-            startAsyncOrderedBroker();
+            broker = new AsyncOrderedDispatchBroker<>();
+            startBroker();
         }
 
     }
 
     /**
-     * The following three methods are the three implementation of the brokers
+     * The following method is the implementation for the broker, the broker has been initialized according to the user parameter
      */
 
-    private void startSyncOrderedBroker() {
-        //over here is where we will initialize our sync ordered broker
-        syncOrderedBroker = new SynchronousOrderedDispatchBroker<>();
+    private void startBroker() {
         //we add the broker to our publisher, as each publisher can publish to
         //multiple brokers
-        androidFilePublisher.addBroker(syncOrderedBroker);
-        homeFilePublisher.addBroker(syncOrderedBroker);
+        androidFilePublisher.addBroker(broker);
+        homeFilePublisher.addBroker(broker);
         //we make our subscribers subscribe to the broker
-        oldAmazonFileSubscriber.subscribeToBroker(syncOrderedBroker);
-        newAmazonFileSubscriber.subscribeToBroker(syncOrderedBroker);
+        oldAmazonFileSubscriber.subscribeToBroker(broker);
+        newAmazonFileSubscriber.subscribeToBroker(broker);
 
         /**
          * Could have instantiated the threads earlier, as in case of all the brokers
@@ -156,92 +161,10 @@ public class AmazonUtilities {
         try {
             androidFilePublisherThread.join();
             homeFilePublisherThread.join();
+            broker.shutdown();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        syncOrderedBroker.shutdown();
-    }
-
-    private void startAsyncUnorderedBroker() {
-        //over here is where we will initialize our async unordered broker
-        asyncUnorderedBroker = new AsyncUnorderedDispatchBroker<>();
-        //we add the broker to our publisher, as each publisher can publish to
-        //multiple brokers
-        androidFilePublisher.addBroker(asyncUnorderedBroker);
-        homeFilePublisher.addBroker(asyncUnorderedBroker);
-        //we make our subscribers subscribe to the broker
-        oldAmazonFileSubscriber.subscribeToBroker(asyncUnorderedBroker);
-        newAmazonFileSubscriber.subscribeToBroker(asyncUnorderedBroker);
-
-        //declaring the threads for each publisher and assigning it, its task
-        Thread androidFilePublisherThread = new Thread(() -> {
-            for (int i = 0; i < androidFileObjects.size(); i++){
-                AmazonObject item = androidFileObjects.get(i);
-                androidFilePublisher.publish(item);
-            }
-        });
-
-        Thread homeFilePublisherThread = new Thread(() -> {
-            for (int i = 0; i < homeFileObjects.size(); i++){
-                AmazonObject item = homeFileObjects.get(i);
-                homeFilePublisher.publish(item);
-            }
-        });
-
-        //starting the threads
-        androidFilePublisherThread.start();
-        homeFilePublisherThread.start();
-
-        //we use this to ensure that we only shutdown our broker once both the threads are done publishing
-        //because if we shut down our threads before we are done publishing we will get error messages
-        try {
-            androidFilePublisherThread.join();
-            homeFilePublisherThread.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        asyncUnorderedBroker.shutdown();
-    }
-
-    private void startAsyncOrderedBroker() {
-        //over here is where we will initialize our async ordered broker
-        asyncOrderedBroker = new AsyncOrderedDispatchBroker<>();
-        //we add the broker to our publisher, as each publisher can publish to
-        //multiple brokers
-        androidFilePublisher.addBroker(asyncOrderedBroker);
-        homeFilePublisher.addBroker(asyncOrderedBroker);
-        //we make our subscribers subscribe to the broker
-        oldAmazonFileSubscriber.subscribeToBroker(asyncOrderedBroker);
-        newAmazonFileSubscriber.subscribeToBroker(asyncOrderedBroker);
-
-        //declaring the threads for each publisher and assigning it, its task
-        Thread androidFilePublisherThread = new Thread(() -> {
-            for (int i = 0; i < androidFileObjects.size(); i++){
-                AmazonObject item = androidFileObjects.get(i);
-                androidFilePublisher.publish(item);
-            }
-        });
-
-        Thread homeFilePublisherThread = new Thread(() -> {
-            for (int i = 0; i < homeFileObjects.size(); i++){
-                AmazonObject item = homeFileObjects.get(i);
-                homeFilePublisher.publish(item);
-            }
-        });
-
-        //starting the threads
-        androidFilePublisherThread.start();
-        homeFilePublisherThread.start();
-
-        //we use this to ensure that we only shutdown our broker once both the threads are done publishing
-        //because if we shut down our threads before we are done publishing we will get error messages
-        try {
-            androidFilePublisherThread.join();
-            homeFilePublisherThread.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        asyncOrderedBroker.shutdown();
     }
 
     /**
